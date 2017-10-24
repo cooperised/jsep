@@ -2,6 +2,8 @@
 //     JSEP may be freely distributed under the MIT License
 //     http://jsep.from.so/
 
+// Modified by AJP for parsing spreadsheet-like expressions
+
 /*global module: true, exports: true, console: true */
 (function (root) {
 	'use strict';
@@ -48,17 +50,16 @@
 		t = true,
 	// Use a quickly-accessible map to store all of the unary operators
 	// Values are set to `true` (it really doesn't matter)
-		unary_ops = {'-': t, '!': t, '~': t, '+': t},
+		unary_ops = {'-': t, '+': t},
 	// Also use a map for the binary operations but set their values to their
 	// binary precedence for quick reference:
 	// see [Order of operations](http://en.wikipedia.org/wiki/Order_of_operations#Programming_language)
 		binary_ops = {
-			'||': 1, '&&': 2, '|': 3,  '^': 4,  '&': 5,
-			'==': 6, '!=': 6, '===': 6, '!==': 6,
-			'<': 7,  '>': 7,  '<=': 7,  '>=': 7,
-			'<<':8,  '>>': 8, '>>>': 8,
-			'+': 9, '-': 9,
-			'*': 10, '/': 10, '%': 10
+			'or': 1, 'and': 2, 'OR': 1, 'AND': 2,
+			'=': 3, '<>': 3,
+			'<': 4,  '>': 4,  '<=': 4,  '>=': 4,
+			'+': 5, '-': 5,
+			'*': 6, '/': 6, '^': 7
 		},
 	// Get return the longest key length of any object
 		getMaxKeyLen = function(obj) {
@@ -102,17 +103,11 @@
 			return (ch >= 48 && ch <= 57); // 0...9
 		},
 		isIdentifierStart = function(ch) {
-			return (ch === 36) || (ch === 95) || // `$` and `_`
-					(ch >= 65 && ch <= 90) || // A...Z
-					(ch >= 97 && ch <= 122) || // a...z
-                    (ch >= 128 && !binary_ops[String.fromCharCode(ch)]); // any non-ASCII that is not an operator
+			return (ch === 36); // `$`
 		},
 		isIdentifierPart = function(ch) {
-			return (ch === 36) || (ch === 95) || // `$` and `_`
-					(ch >= 65 && ch <= 90) || // A...Z
-					(ch >= 97 && ch <= 122) || // a...z
-					(ch >= 48 && ch <= 57) || // 0...9
-                    (ch >= 128 && !binary_ops[String.fromCharCode(ch)]); // any non-ASCII that is not an operator
+			return (ch >= 65 && ch <= 90) || // A...Z
+					(ch >= 97 && ch <= 122);
 		},
 
 		// Parsing
